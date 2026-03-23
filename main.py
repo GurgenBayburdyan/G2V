@@ -10,7 +10,7 @@ hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5)
 
 # Open video file
 video_path = "videos\\barev.mp4"
-cap = cv2.VideoCapture(video_path)
+cap = cv2.VideoCapture(0)
 
 while cap.isOpened():
     ret, frame = cap.read()

@@ -1,5 +1,6 @@
 import cv2
 import os
+import time
 
 def get_unique_filename(folder, base_name, extension):
     counter = 0
@@ -11,7 +12,7 @@ def get_unique_filename(folder, base_name, extension):
             return full_path
         counter += 1
 
-video_folder = str("videos")
+video_folder = "videos"
 os.makedirs(video_folder, exist_ok=True)
 
 output_path = get_unique_filename(video_folder, "barev", ".mp4")
@@ -29,7 +30,10 @@ fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
 
 print(f"Запись идет в: {output_path}")
-print("Нажмите 'q' на клавиатуре, чтобы остановить.")
+print("Запись будет длиться 5 секунд...")
+
+start_time = time.time()
+duration = 3
 
 try:
     while True:
@@ -41,6 +45,9 @@ try:
         out.write(frame)
 
         cv2.imshow('Recording... Press Q to Save', frame)
+
+        if time.time() - start_time >= duration:
+            break
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
