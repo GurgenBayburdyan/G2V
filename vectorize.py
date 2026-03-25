@@ -7,8 +7,10 @@ VIDEO_ID = 1
 mp_pose = mp.solutions.pose
 mp_hands = mp.solutions.hands
 
+# ✅ Added label column
 columns = [
     "id",
+    "label",
     "left_shoulder_x","left_shoulder_y",
     "left_elbow_x","left_elbow_y",
     "left_wrist_x","left_wrist_y",
@@ -23,11 +25,19 @@ columns = [
     "h2_pinky_x","h2_pinky_y"
 ]
 
-def vetorize(video_path, video_id=VIDEO_ID, show=False):
+def vetorize(video_path, video_id=VIDEO_ID, label=None, show=False):
     cap = cv2.VideoCapture(video_path)
     data = []
 
-    with mp_pose.Pose(0.5, 0.5) as pose, mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5) as hands:
+    with mp_pose.Pose(
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5
+        ) as pose, \
+        mp_hands.Hands(
+            max_num_hands=2,
+            min_detection_confidence=0.5
+        ) as hands:
+
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -54,12 +64,18 @@ def vetorize(video_path, video_id=VIDEO_ID, show=False):
 
             if hand_res.multi_hand_landmarks:
                 for i, hand in enumerate(hand_res.multi_hand_landmarks[:2]):
-                    tips = [(int(hand.landmark[t].x * w), int(hand.landmark[t].y * h)) for t in [4, 8, 12, 16, 20]]
-                    if i == 0: h1 = tips
-                    else: h2 = tips
+                    tips = [
+                        (int(hand.landmark[t].x * w), int(hand.landmark[t].y * h))
+                        for t in [4, 8, 12, 16, 20]
+                    ]
+                    if i == 0:
+                        h1 = tips
+                    else:
+                        h2 = tips
 
             row = [
                 video_id,
+                label,
                 *ls, *le, *lw,
                 *rs, *re, *rw,
                 *(c for p in h1 for c in p),
@@ -77,5 +93,4 @@ def vetorize(video_path, video_id=VIDEO_ID, show=False):
     if show:
         cv2.destroyAllWindows()
 
-    df = pd.DataFrame(data, columns=columns)
-    return df
+    return pd.DataFrame(data, columns=columns)

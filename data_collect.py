@@ -4,15 +4,16 @@ import time
 
 def get_unique_filename(folder, base_name, extension):
     counter = 0
+
     while True:
-        suffix = "" if counter == 0 else str(counter)
+        suffix = str(counter)
         name = f"{base_name}{suffix}{extension}"
         full_path = os.path.join(folder, name)
         if not os.path.exists(full_path):
             return full_path
         counter += 1
 
-video_folder = "vidoes\\barev_0"
+video_folder = "videos\\barev_0"
 os.makedirs(video_folder, exist_ok=True)
 
 output_path = get_unique_filename(video_folder, "barev", ".mp4")
