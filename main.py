@@ -10,7 +10,7 @@ mp_draw = mp.solutions.drawing_utils
 pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5)
 
-cap = cv2.VideoCapture("videos\\hello.webm")
+cap = cv2.VideoCapture("videos/barev_0/hello.webm")
 frame_count = 0
 start_time = time.time()
 duration = 5
@@ -43,6 +43,7 @@ while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
+
 
     if time.time() - start_time >= duration:
         break
@@ -133,5 +134,5 @@ while cap.isOpened():
 cap.release()
 cv2.destroyAllWindows()
 
-df.to_csv("data.csv", index=False)
+df.to_csv("vectors\\data.csv", index=False)
 print("Saved to gesture_data.csv")
