@@ -12,7 +12,7 @@ def get_unique_filename(folder, base_name, extension):
             return full_path
         counter += 1
 
-video_folder = "videos"
+video_folder = "vidoes\\barev_0"
 os.makedirs(video_folder, exist_ok=True)
 
 output_path = get_unique_filename(video_folder, "barev", ".mp4")
