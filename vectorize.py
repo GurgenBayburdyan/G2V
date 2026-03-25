@@ -1,7 +1,8 @@
 import cv2
 import mediapipe as mp
 import pandas as pd
-import time
+
+VIDEO_ID = 1
 
 mp_pose = mp.solutions.pose
 mp_hands = mp.solutions.hands
@@ -10,13 +11,14 @@ mp_draw = mp.solutions.drawing_utils
 pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5)
 
-cap = cv2.VideoCapture("videos/barev_0/hello.webm")
-frame_count = 0
-start_time = time.time()
-duration = 5
+cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+
+if not cap.isOpened():
+    print("Camera not working")
+    exit()
 
 columns = [
-    "frame",
+    "id",
     "left_shoulder_x","left_shoulder_y",
     "left_elbow_x","left_elbow_y",
     "left_wrist_x","left_wrist_y",
@@ -39,16 +41,11 @@ columns = [
 
 df = pd.DataFrame(columns=columns)
 
-while cap.isOpened():
+while True:
     ret, frame = cap.read()
     if not ret:
         break
 
-
-    if time.time() - start_time >= duration:
-        break
-
-    frame_count += 1
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     pose_results = pose.process(rgb)
@@ -56,14 +53,12 @@ while cap.isOpened():
 
     h, w, _ = frame.shape
 
-    # Default values
     left_shoulder = left_elbow = left_wrist = (-1, -1)
     right_shoulder = right_elbow = right_wrist = (-1, -1)
 
     h1 = [(-1, -1)] * 5
     h2 = [(-1, -1)] * 5
 
-    # Arms
     if pose_results.pose_landmarks:
         lm = pose_results.pose_landmarks.landmark
 
@@ -78,7 +73,6 @@ while cap.isOpened():
         cv2.line(frame, right_shoulder, right_elbow, (255, 0, 0), 3)
         cv2.line(frame, right_elbow, right_wrist, (255, 0, 0), 3)
 
-    # Hands
     if hand_results.multi_hand_landmarks:
         for hand_index, hand_landmarks in enumerate(hand_results.multi_hand_landmarks):
             mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
@@ -97,9 +91,8 @@ while cap.isOpened():
             elif hand_index == 1:
                 h2 = fingertips
 
-    # Save row
     row = {
-        "frame": frame_count,
+        "id": VIDEO_ID,
 
         "left_shoulder_x": left_shoulder[0],
         "left_shoulder_y": left_shoulder[1],
@@ -128,11 +121,12 @@ while cap.isOpened():
     df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
 
     cv2.imshow("Detection", frame)
+
     if cv2.waitKey(1) & 0xFF == 27:
         break
 
 cap.release()
 cv2.destroyAllWindows()
 
-df.to_csv("vectors\\data.csv", index=False)
-print("Saved to gesture_data.csv")
+df.to_csv("data.csv", index=False)
+print("Saved to data.csv")
